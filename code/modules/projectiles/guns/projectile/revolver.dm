@@ -15,6 +15,15 @@
 	bulletinsert_sound 	= "revolver_reload"//'sound/weapons/guns/interact/rev_magin.ogg'
 	fire_sound = "revolver_fire"
 
+/obj/item/gun/projectile/revolver/verb/spin_gun()  
+    set name = "Spin Gun"
+    set category = "Object"
+    var/randomspeed = (5 * rand(2, 4))
+    var/randomloops = rand(1,3)
+      
+    SpinAnimation(randomspeed, randomloops) // Random Spin
+    visible_message("<span class='warning'>\The [usr] spins \the [src] on their finger!</span>")
+
 /obj/item/gun/projectile/revolver/cpt
 	name = "Captain's Special"
 	desc = "The sort of weapon usually found on nobility, such as captains or commandants."
