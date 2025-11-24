@@ -41,6 +41,11 @@ GLOBAL_LIST_INIT(ert_headsetvoices, list(
 	),
 	"evil matt" = list(
 	list("Evil Matt Here", 'sound/effects/ert/admin_vo/matt/evilmatt.ogg', "<i>Hey everyone, evil Matt here- and today I'll be learning how to code.</i>")
+	),
+	"hungry matt" = list(
+	list("Runtimes", 'sound/effects/ert/admin_vo/matt/runtimes.ogg', "<i>I want you to submit uh-a screenshot proving theres no runtimes associated with your changes or it's over for you bucko HAHAHA.</i>"),
+	list("Dont test your code", 'sound/effects/ert/admin_vo/matt/donttestyourcode.ogg', "<i>HA- Hey everyone, Matt here. If you dont test your code, im gonna kill you, in your sleep tonight, HA-</i>"),
+	list("Test Your Pull Requests", 'sound/effects/ert/admin_vo/matt/testyourpullrequests.ogg', "<i>Make sure you test your pull requests before you- submit it to my codebase, or you'll die. HAHAHAHA!</i>")
 	)
 ))
 // list("Display Name", sound_file, transcript)
