@@ -688,6 +688,7 @@ SUBSYSTEM_DEF(jobs)
 
 /mob/living/carbon/human/proc/set_squad_huds()
 	var/image/HUD_icon = get_squad_hud()
+	if(!HUD_icon) return //runtime fix?
 	for(var/mob/living/carbon/human/H in GLOB.human_mob_list)
 		if(H.warfare_faction == src.warfare_faction)
 			if(istype(H.squad, src.squad))//IF they're in the same squad as us then they can see our icon. This includes us too.
@@ -698,6 +699,7 @@ SUBSYSTEM_DEF(jobs)
 					src.client?.images += H.get_squad_hud()//Make sure we get their HUD icon too.
 
 /mob/living/carbon/human/proc/get_squad_hud()
+	if(!mind || !mind.assigned_role) return null  //runtime fix?
 	var/datum/job/J = SSjobs.GetJob(src.mind.assigned_role)
 	var/icon_source = 'icons/mob/hud_blue.dmi'
 	if(J.is_red_team)
