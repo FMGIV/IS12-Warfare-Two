@@ -368,6 +368,7 @@
 
 /datum/grab/special/proc/attack_throat(var/obj/item/grab/G, var/obj/item/W, var/mob/living/carbon/human/user)
 	var/mob/living/carbon/human/affecting = G.affecting
+	var/mob/living/carbon/human/assailant = G.assailant
 	var/obj/item/organ/external/O = G.get_targeted_organ()
 	var/decapitation = FALSE
 	
@@ -413,10 +414,11 @@
 		damage_mod = 1.0 - (helmet.armor["melee"]/100)
 
 	var/total_damage = 0
-	var/damage_flags = W.damage_flags()
+	//var/damage_flags = W.damage_flags()
 	for(var/i in 1 to 3)
 		var/damage = max(W.force*1.5, 20)*damage_mod
-		affecting.apply_damage(damage, W.damtype, BP_HEAD, 0, damage_flags, used_weapon=W)
+		//affecting.apply_damage(damage, W.damtype, BP_HEAD, 0, damage_flags, used_weapon=W)
+		affecting.attack_bloody(W, assailant, damage, BP_HEAD)
 		total_damage += damage
 
 	if(total_damage)

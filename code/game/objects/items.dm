@@ -807,10 +807,12 @@ var/list/global/slot_flags_enumeration = list(
 		*/ //not gonna deal with this
 
 		var/obj/item/organ/external/affecting = H.get_organ(eyes.parent_organ)
-		affecting.take_damage(src.force)
+		//affecting.take_damage(src.force)
+		H.attack_bloody(src, user, src.force, affecting)
 	else
 		M.take_organ_damage(src.force)
 	M.eye_blurry += rand(3,4)
+	playsound(H, pick(GLOB.trauma_sound), 50, 0) //medium squelch
 	return 1
 
 /obj/item/clean_blood()
