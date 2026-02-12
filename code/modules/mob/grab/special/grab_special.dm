@@ -442,3 +442,52 @@
 	admin_attack_log(user, G.assailant, "Knifed their victim", "Was knifed", "knifed")
 	user.doing_something = FALSE
 	return 1
+	
+/obj/item/grab/special/eyes
+	type_name = GRAB_EYES
+	start_grab_name = GRAB_EYES
+	
+/datum/grab/special/eyes  
+    type_name = GRAB_EYES  
+    icon_state = "wrench" //TODO:REPLACE WITH A MORE PROPER ICON
+    state_name = GRAB_EYES
+	
+/datum/grab/special/eyes/attack_self_act(var/obj/item/grab/G)
+	if(!G.wielded)
+		to_chat(G.assailant, "<span class='warning'>Use both hands!</span>")
+		return
+	do_eye_gouging(G)
+	if(G.assailant) //if the grab gets broken before this finishes
+		G.assailant.setClickCooldown(DEFAULT_SLOW_COOLDOWN)
+	
+/datum/grab/special/eyes/proc/do_eye_gouging(var/obj/item/grab/G)
+	var/mob/living/carbon/human/assailant = G.assailant
+	var/mob/living/carbon/human/affecting = G.affecting
+	
+	if(assailant.doing_something)
+		to_chat(assailant, "<span class='warning'>Already doing something!</span>")
+		return
+		
+	assailant.doing_something = TRUE 
+	
+	if(!assailant || !affecting || !assailant.Adjacent(affecting))  //no force eye gouging please
+		G.force_drop()
+		assailant.doing_something = FALSE
+		return
+
+	var/meleeskill = assailant.SKILL_LEVEL(melee)
+	
+	affecting.visible_message("<span class='notice'>[assailant] is trying to gouge out [affecting]'s eyes!</span>")
+	
+	if(!do_after(assailant, (40 - meleeskill), affecting))
+		assailant.doing_something = FALSE
+		return
+	
+	var/obj/item/organ/internal/eyes/eyes = affecting.internal_organs_by_name[BP_EYES]
+	if(eyes)
+		eyes.take_damage(45, 0) //45 is max health for eyes
+		assailant.visible_message("<span class='combat_success'>[assailant] gouges out [affecting]'s [eyes.name]!</span>")
+		affecting.custom_pain("You feel your eyes being gouged out!", 120, affecting = eyes)
+		playsound(affecting, pick(GLOB.trauma_sound), 100, 0) //*squelch*
+	assailant.doing_something = FALSE
+	return

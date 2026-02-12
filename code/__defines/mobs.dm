@@ -22,6 +22,7 @@
 #define GRAB_TAKEDOWN       "takedown"
 #define GRAB_STRANGLE       "strangle"
 #define GRAB_WRENCH         "wrench"
+#define GRAB_EYES           "eyes"
 
 // Grab levels.
 #define NORM_PASSIVE    "normal passive"
