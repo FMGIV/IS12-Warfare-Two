@@ -243,13 +243,11 @@
 	if(G.assailant.a_intent != I_HELP)
 		if(G.assailant.zone_sel.selecting == BP_HEAD && G.target_zone == BP_HEAD || G.assailant.zone_sel.selecting == BP_HEAD && G.target_zone == BP_THROAT) // grab head or throat and target head for headbutting
 			if(!usr.lying) // bit hard to headbutt while lying down
-				to_chat(usr, "<span class='warning'>I can't headbutt while the enemy is also lying down!</span>")
-				return 1
 				if(headbutt(G))
 					usr.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 					return 1
 			else
-				to_chat(usr, "<span class='warning'>I can't headbutt while the enemy is also lying down!</span>")
+				to_chat(usr, "<span class='warning'>I can't headbutt while the enemy is lying down!</span>")
 				return 1
 		else if(G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_HEAD || G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_EYES || G.assailant.zone_sel.selecting == EYES && G.target_zone == BP_THROAT) //grab head or throat and target eyes for eye gouging
 			if(attack_eye(G))
