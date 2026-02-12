@@ -285,8 +285,6 @@
 	attacker.adjustStaminaLoss(10)
 
 	var/damage = attacker.STAT_LEVEL(str)
-	if(attacker.lying)
-		damage = damage/2 //not as effective thrusting upwards
 	var/defense = target.STAT_LEVEL(end)
 	var/obj/item/clothing/hat = attacker.head
 	var/damage_flags = 0
