@@ -407,41 +407,43 @@ meteor_act
 
 	return 1
 
-/mob/living/carbon/human/proc/attack_bloody(obj/item/W, mob/living/attacker, var/effective_force, var/hit_zone)
-	if(W.damtype != BRUTE)
-		return
+/mob/living/carbon/human/proc/attack_bloody(obj/item/W = null, mob/living/attacker, var/effective_force, var/hit_zone)
+	
+	if(W) //so I can use it for headbutts n shit
+		if(W.damtype != BRUTE)
+			return
 
-	//make non-sharp low-force weapons less likely to be bloodied
-	if(W.sharp || prob(effective_force*4))
-		if(!(W.atom_flags & ATOM_FLAG_NO_BLOOD))
-			W.add_blood(src)
-	else
-		return //if the weapon itself didn't get bloodied than it makes little sense for the target to be bloodied either
+		//make non-sharp low-force weapons less likely to be bloodied
+		if(W.sharp || prob(effective_force*4))
+			if(!(W.atom_flags & ATOM_FLAG_NO_BLOOD))
+				W.add_blood(src)
+		else
+			return //if the weapon itself didn't get bloodied than it makes little sense for the target to be bloodied either
 
-	//getting the weapon bloodied is easier than getting the target covered in blood, so run prob() again
-	if(prob(33 + W.sharp*10))
-		var/turf/location = loc
-		if(istype(location, /turf/simulated))
-			location.add_blood(src)
-		if(ishuman(attacker))
-			var/mob/living/carbon/human/H = attacker
-			if(get_dist(H, src) <= 1) //people with TK won't get smeared with blood
-				H.bloody_body(src)
-				H.bloody_hands(src)
+		//getting the weapon bloodied is easier than getting the target covered in blood, so run prob() again
+		if(prob(33 + W.sharp*10))
+			var/turf/location = loc
+			if(istype(location, /turf/simulated))
+				location.add_blood(src)
+			if(ishuman(attacker))
+				var/mob/living/carbon/human/H = attacker
+				if(get_dist(H, src) <= 1) //people with TK won't get smeared with blood
+					H.bloody_body(src)
+					H.bloody_hands(src)
 
-		switch(hit_zone)
-			if(BP_HEAD)
-				if(wear_mask)
-					wear_mask.add_blood(src)
-					update_inv_wear_mask(0)
-				if(head)
-					head.add_blood(src)
-					update_inv_head(0)
-				if(glasses && prob(33))
-					glasses.add_blood(src)
-					update_inv_glasses(0)
-			if(BP_CHEST)
-				bloody_body(src)
+	switch(hit_zone)
+		if(BP_HEAD)
+			if(wear_mask)
+				wear_mask.add_blood(src)
+				update_inv_wear_mask(0)
+			if(head)
+				head.add_blood(src)
+				update_inv_head(0)
+			if(glasses && prob(33))
+				glasses.add_blood(src)
+				update_inv_glasses(0)
+		if(BP_CHEST)
+			bloody_body(src)
 
 	//All this is copypasta'd from projectile code. Basically there's a cool splat animation when someone gets hit by something.
 	var/splatter_dir = dir
@@ -813,6 +815,7 @@ meteor_act
 						user.visible_message("<span class=combat_success>[user] launches their knee into [src]'s [affecting.name]!<span>")
 						src.visible_message("<span class='danger'>[src] looks momentarily disoriented.</span>", "<span class='danger'>You see stars.</span>")
 						src.apply_effect(kickdam*3, EYE_BLUR, armour)
+						src.attack_bloody(null, user, kickdam * 3, hit_zone)
 						return
 			if(specialkick == TRUE && !user.lying && lying) //victim is lying, attacker is standing
 				var/mob/living/carbon/human/Attacker = user
@@ -820,6 +823,7 @@ meteor_act
 				var/actualdamage = (kickdam + shoes.force) * 3
 				do_kick(user, src, hit_zone, actualdamage, affecting) //ouch.
 				user.visible_message("<span class=combat_success>[user] stomps down on [src]'s [affecting.name]!<span>")
+				src.attack_bloody(shoes, user, actualdamage, hit_zone)
 				return
 			else if(specialkick == TRUE) //you got lucky
 				do_kick(user, src, hit_zone, kickdam * 2, affecting) //that hurt a little more
@@ -844,6 +848,7 @@ meteor_act
 						user.visible_message("<span class=combat_success>[user] launches their knee towards [src]'s mouth!<span>")
 						var/obj/item/organ/external/head/U = affecting
 						U.knock_out_teeth(get_dir(user, src), rand(1,3))//Knocking out one tooth at a time.
+						src.attack_bloody(null, user, kickdam * 3, hit_zone)
 						return
 			if(lying && !user.lying)
 				if(istype(affecting, /obj/item/organ/external/head) && prob(95))
@@ -851,6 +856,7 @@ meteor_act
 					U.knock_out_teeth(get_dir(user, src), rand(1,3))//Knocking out one tooth at a time.
 					do_kick(user, src, hit_zone, kickdam * 2, affecting) //hurts more
 					user.visible_message("<span class=combat_success>[user] kicks [src] in the [affecting.name]!<span>")
+					src.attack_bloody(shoes, user, kickdam * 2, hit_zone)
 					return
 			else //normal ass kick
 				do_kick(user, src, hit_zone, kickdam, affecting)
@@ -871,6 +877,7 @@ meteor_act
 				src.losebreath = src.losebreath + (actualdamage / 2)
 				src.apply_effect(STUTTER, actualdamage) //probably hard to talk after getting your throat stomped
 				src.Weaken(round(actualdamage / 3))
+				src.attack_bloody(shoes, user, actualdamage, hit_zone)
 				return
 			else
 				do_kick(user, src, hit_zone, kickdam, affecting)
@@ -936,6 +943,7 @@ meteor_act
 				var/actualdamage = (kickdam + shoes.force) * 3
 				do_kick(user, src, hit_zone, actualdamage, affecting) //ouch.
 				user.visible_message("<span class=combat_success>[user] stomps down on [src]'s [affecting.name]!<span>")
+				src.attack_bloody(shoes, user, actualdamage, hit_zone)
 				return
 			else
 				do_kick(user, src, hit_zone, kickdam, affecting)
@@ -970,6 +978,7 @@ meteor_act
 				var/actualdamage = (kickdam + shoes.force) * 3
 				do_kick(user, src, hit_zone, actualdamage, affecting) //ouch.
 				user.visible_message("<span class=combat_success>[user] stomps down on [src]'s [affecting.name]!<span>")
+				src.attack_bloody(shoes, user, actualdamage, hit_zone)
 				return
 			else
 				do_kick(user, src, hit_zone, kickdam, affecting)
@@ -991,6 +1000,7 @@ meteor_act
 				user.visible_message("<span class=combat_success>[user] stomps down on [src]'s groin!<span>")
 				src.visible_message("<span class='warning'>[src] looks like \he is in pain!</span>", "<span class='phobia'>[(src.gender=="female") ? "Oh god that hurt!" : "Oh no, not your[pick("testicles", "crown jewels", "clockweights", "family jewels", "marbles", "bean bags", "teabags", "sweetmeats", "goolies")]!"]</span>")
 				src.apply_effects(stutter = actualdamage * 4, agony = actualdamage * 6, blocked = armour) //OOOOOOF
+				src.attack_bloody(src, user, actualdamage, hit_zone)
 				return
 			else if(specialkick == TRUE && user.lying && !lying) //attacker is lying, victim is standing
 				do_kick(user, src, hit_zone, kickdam, affecting) //not as effective, still hurts like a bitch
@@ -1021,6 +1031,7 @@ meteor_act
 				var/actualdamage = (kickdam + shoes.force) * 3
 				do_kick(user, src, hit_zone, actualdamage, affecting) //ouch.
 				user.visible_message("<span class=combat_success>[user] stomps down on [src]'s [affecting.name]!<span>")
+				src.attack_bloody(src, user, actualdamage, hit_zone)
 				return
 			else
 				do_kick(user, src, hit_zone, kickdam, affecting)
@@ -1035,6 +1046,7 @@ meteor_act
 				do_kick(user, src, hit_zone, actualdamage, affecting) //oof
 				user.visible_message("<span class=combat_success>[user] stomps on [src]'s [affecting.name]!<span>")
 				src.custom_pain("Ouch, my foot!", actualdamage * 2, affecting)
+				src.attack_bloody(src, user, actualdamage, hit_zone)
 				return
 			else
 				do_kick(user, src, hit_zone, kickdam, affecting)

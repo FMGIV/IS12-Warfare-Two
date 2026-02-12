@@ -752,11 +752,11 @@ var/list/global/slot_flags_enumeration = list(
 			if(protection && (protection.body_parts_covered & EYES))
 				// you can't stab someone in the eyes wearing a mask!
 				to_chat(user, "<span class='warning'>You're going to need to remove the eye covering first.</span>")
-				return
+				return 0 //normal attack
 
 	if(!M.has_eyes())
 		to_chat(user, "<span class='warning'>You cannot locate any eyes on [M]!</span>")
-		return
+		return 0 //normal attack
 
 	admin_attack_log(user, M, "Attacked using \a [src]", "Was attacked with \a [src]", "used \a [src] to attack")
 
@@ -764,6 +764,16 @@ var/list/global/slot_flags_enumeration = list(
 	user.do_attack_animation(M)
 
 	src.add_fingerprint(user)
+	
+	var/bad_arc = reverse_direction(H.dir) //arc of directions from which we cannot block or dodge
+
+	if(check_shield_arc(H, bad_arc, null, user)) //cant dodge from behind
+		if(H.attempt_dodge())
+			return 1 //so no double attack on whiff
+			
+	if(H.check_shields(src.force, src, user, null, "the [src.name]"))
+		return 1 //so no double attack on parry
+	
 	//if((CLUMSY in user.mutations) && prob(50))
 	//	M = user
 		/*
@@ -781,7 +791,7 @@ var/list/global/slot_flags_enumeration = list(
 			for(var/mob/O in (viewers(M) - user - M))
 				O.show_message("<span class='danger'>[M] has been stabbed in the eye with [src] by [user].</span>", 1)
 			to_chat(M, "<span class='danger'>[user] stabs you in the eye with [src]!</span>")
-			to_chat(user, "<span class='danger'>You stab [M] in the eye with [src]!</span>")
+			to_chat(user, "<span class='combat_success'>You stab [M] in the eye with [src]!</span>")
 		else
 			user.visible_message( \
 				"<span class='danger'>[user] has stabbed themself with [src]!</span>", \
@@ -789,6 +799,7 @@ var/list/global/slot_flags_enumeration = list(
 			)
 
 		eyes.damage += rand(3,4)
+		/*
 		if(eyes.damage >= eyes.min_bruised_damage)
 			if(M.stat != 2)
 				if(eyes.robotic < ORGAN_ROBOT) //robot eyes bleeding might be a bit silly
@@ -803,13 +814,17 @@ var/list/global/slot_flags_enumeration = list(
 			if (eyes.damage >= eyes.min_broken_damage)
 				if(M.stat != 2)
 					to_chat(M, "<span class='warning'>You go blind!</span>")
+		*/ //not gonna deal with this
 
 		var/obj/item/organ/external/affecting = H.get_organ(eyes.parent_organ)
-		affecting.take_damage(7)
+		affecting.take_damage(src.force)
+		H.attack_bloody(src, user, src.force, affecting)
+		H.custom_pain("You feel your eye getting stabbed!", 80, affecting)
 	else
-		M.take_organ_damage(7)
+		M.take_organ_damage(src.force)
 	M.eye_blurry += rand(3,4)
-	return
+	playsound(H, pick(GLOB.trauma_sound), 50, 0) //medium squelch
+	return 1
 
 /obj/item/clean_blood()
 	. = ..()

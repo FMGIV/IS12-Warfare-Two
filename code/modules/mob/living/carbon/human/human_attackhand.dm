@@ -196,7 +196,10 @@
 						return H.make_grab(H, src, GRAB_TAKEDOWN)
 					if(BP_GROIN)
 						return H.make_grab(H, src, GRAB_TAKEDOWN)
-
+						
+					//eye attacks
+					if(BP_EYES)
+						return H.make_grab(H, src, GRAB_EYES)
 
 
 			return H.make_grab(H, src)

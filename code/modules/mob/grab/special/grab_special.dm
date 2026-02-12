@@ -249,7 +249,7 @@
 			else
 				to_chat(usr, "<span class='warning'>I can't headbutt while lying down!</span>")
 				return 1
-		else if(G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_HEAD || G.assailant.zone_sel.selecting == EYES && G.target_zone == BP_THROAT) //grab head or throat and target eyes for eye gouging
+		else if(G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_HEAD || G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_EYES || G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_THROAT) //grab head or throat and target eyes for eye gouging
 			if(attack_eye(G))
 				usr.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 				return 1
@@ -268,8 +268,8 @@
 			to_chat(attacker, "<span class='danger'>You're going to need to remove the eye covering first.</span>")
 			return
 	if(!target.has_eyes())
-		to_chat(attacker, "<span class='danger'>You cannot locate any eyes on [target]!</span>")
-		return
+		//to_chat(attacker, "<span class='danger'>You cannot locate any eyes on [target]!</span>") //if no eyes just punch em
+		return 0
 
 	admin_attack_log(attacker, target, "Grab attacked the victim's eyes.", "Had their eyes grab attacked.", "attacked the eyes, using a grab action, of")
 
@@ -279,10 +279,11 @@
 /datum/grab/special/proc/headbutt(var/obj/item/grab/G)
 	var/mob/living/carbon/human/attacker = G.assailant
 	var/mob/living/carbon/human/target = G.affecting
-
-	if(target.lying)
-		return
-		
+	
+	for(var/obj/item/grab/Gettinggrabbed in attacker.grabbed_by)
+		if(Gettinggrabbed.target_zone in list(BP_HEAD, BP_THROAT))
+			to_chat(attacker, "<span class='phobia'>You try to headbutt [target], but you feel a grip holding your head in place!</span>")
+			return 1 // so it doesn't punch em also
 	attacker.adjustStaminaLoss(10)
 
 	var/damage = attacker.STAT_LEVEL(str)
@@ -301,6 +302,8 @@
 	var/armor = target.run_armor_check(BP_HEAD, "melee")
 	target.apply_damage(damage, BRUTE, BP_HEAD, armor, damage_flags)
 	attacker.apply_damage((damage/2), BRUTE, BP_HEAD, attacker.run_armor_check(BP_HEAD, "melee"))
+	target.attack_bloody(null, attacker, damage, BP_HEAD)  
+	attacker.attack_bloody(null, attacker, damage/2, BP_HEAD)
 
 	if(armor <= 50 && target.headcheck(BP_HEAD) && prob(damage - defense)) //so normal soldiers have a small chance to get knocked out
 		target.apply_effect(20, PARALYZE)
@@ -312,13 +315,20 @@
 	return 1
 	
 /datum/grab/special/resolve_item_attack(var/obj/item/grab/G, var/mob/living/carbon/human/user, var/obj/item/I)
+	if(G.target_zone == BP_THROAT || G.target_zone == BP_HEAD || G.target_zone == BP_EYES)
+		if(istype(I, /obj/item/material/sword/combat_knife)) //eyestabbin
+			var/obj/item/material/sword/combat_knife/stabeminthefuckingeye = I
+			if(stabeminthefuckingeye.atk_mode == STAB)
+				return stabeminthefuckingeye.eyestab(G.affecting, G.assailant)
+	
 	if(G.target_zone == BP_THROAT || G.target_zone == BP_HEAD) //grab throat or head for throat slitting
 		if(G.assailant.zone_sel.selecting == BP_THROAT)
 			return attack_throat(G, I, user)
 	else if(G.target_zone == G.assailant.zone_sel.selecting) //grab and target limb to sever tendon
-		return attack_tendons(G, I, user, G.assailant.zone_sel.selecting)
+		//return attack_tendons(G, I, user, G.assailant.zone_sel.selecting) //REMOVED
+		return 0
 	else
-		return
+		return 0
 			
 /datum/grab/special/proc/attack_tendons(var/obj/item/grab/G, var/obj/item/W, var/mob/living/carbon/human/user, var/target_zone)
 	var/mob/living/carbon/human/affecting = G.affecting
@@ -364,6 +374,7 @@
 
 /datum/grab/special/proc/attack_throat(var/obj/item/grab/G, var/obj/item/W, var/mob/living/carbon/human/user)
 	var/mob/living/carbon/human/affecting = G.affecting
+	var/mob/living/carbon/human/assailant = G.assailant
 	var/obj/item/organ/external/O = G.get_targeted_organ()
 	var/decapitation = FALSE
 	
@@ -413,6 +424,7 @@
 	for(var/i in 1 to 3)
 		var/damage = max(W.force*1.5, 20)*damage_mod
 		affecting.apply_damage(damage, W.damtype, BP_HEAD, 0, damage_flags, used_weapon=W)
+		affecting.attack_bloody(W, assailant, damage, BP_HEAD) //war is *messy*
 		total_damage += damage
 
 	if(total_damage)
@@ -437,3 +449,63 @@
 	admin_attack_log(user, G.assailant, "Knifed their victim", "Was knifed", "knifed")
 	user.doing_something = FALSE
 	return 1
+	
+/obj/item/grab/special/eyes
+	type_name = GRAB_EYES
+	start_grab_name = GRAB_EYES
+	
+/datum/grab/special/eyes  
+    type_name = GRAB_EYES  
+    icon_state = "wrench" //TODO:REPLACE WITH A MORE PROPER ICON
+    state_name = GRAB_EYES
+	
+/datum/grab/special/eyes/attack_self_act(var/obj/item/grab/G)
+	if(!G.wielded)
+		to_chat(G.assailant, "<span class='warning'>Use both hands!</span>")
+		return
+	do_eye_gouging(G)
+	if(G.assailant) //if the grab gets broken before this finishes
+		G.assailant.setClickCooldown(DEFAULT_SLOW_COOLDOWN)
+	
+/datum/grab/special/eyes/proc/do_eye_gouging(var/obj/item/grab/G)
+	var/mob/living/carbon/human/assailant = G.assailant
+	var/mob/living/carbon/human/affecting = G.affecting
+	var/obj/item/organ/internal/eyes/eyes = affecting.internal_organs_by_name[BP_EYES]
+	
+	if(assailant.doing_something)
+		to_chat(assailant, "<span class='warning'>Already doing something!</span>")
+		return
+	if(eyes.status == ORGAN_DEAD)
+		to_chat(assailant, "<span class='warning'>Already gouged out!</span>")
+		return
+		
+	assailant.doing_something = TRUE 
+	
+	if(!assailant || !affecting || !assailant.Adjacent(affecting))  //no force eye gouging please
+		G.force_drop()
+		assailant.doing_something = FALSE
+		return
+
+	var/meleeskill = assailant.SKILL_LEVEL(melee)
+	
+	affecting.visible_message("<span class='notice'>[assailant] is trying to gouge out [affecting]'s eyes!</span>")
+	
+	if(!do_after(assailant, (40 - meleeskill), affecting))
+		assailant.doing_something = FALSE
+		return
+
+	if(eyes)
+		eyes.take_damage(45, 0) //45 is max health for eyes
+		assailant.visible_message("<span class='combat_success'>[assailant] gouges out [affecting]'s [eyes.name]!</span>")
+		affecting.attack_bloody(null, assailant, 45, BP_EYES)  
+		affecting.custom_pain("You feel your eyes being gouged out!", 120, affecting = affecting.get_organ(BP_HEAD))
+		playsound(affecting, pick(GLOB.trauma_sound), 100, 0) //*squelch*
+		affecting.blinded = 1
+		affecting.set_fullscreen(TRUE, "blind", /obj/screen/fullscreen/blind) //oh god I cant see *shit*
+		eyes.status |= ORGAN_DEAD // its dead.
+		var/obj/item/organ/external/head/head = affecting.get_organ(BP_HEAD)
+		if(head)
+			head.eye_icon = "blank_eyes"  
+			head.update_icon()
+	assailant.doing_something = FALSE
+	return

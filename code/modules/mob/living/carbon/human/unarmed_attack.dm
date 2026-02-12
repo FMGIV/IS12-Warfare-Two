@@ -97,11 +97,14 @@ var/global/list/sparring_attack_cache = list()
 /datum/unarmed_attack/proc/handle_eye_attack(var/mob/living/carbon/human/user, var/mob/living/carbon/human/target)
 	var/obj/item/organ/internal/eyes/eyes = target.internal_organs_by_name[BP_EYES]
 	if(eyes)
-		eyes.take_damage(rand(3,4), 1)
-		user.visible_message("<span class='danger'>[user] presses \his [eye_attack_text] into [target]'s [eyes.name]!</span>")
+		var/eyedamage = rand(3,4)
+		eyes.take_damage(eyedamage, 1)
+		user.visible_message("<span class='combat_success'>[user] presses \his fingers into [target]'s [eyes.name]!</span>")
 		var/eye_pain = eyes.can_feel_pain()
-		to_chat(target, "<span class='danger'>You experience[(eye_pain) ? "" : " immense pain as you feel" ] [eye_attack_text_victim] being pressed into your [eyes.name][(eye_pain)? "." : "!"]</span>")
-		return
+		playsound(target, pick(GLOB.trauma_sound), 25, 0) //small squelch
+		target.custom_pain("You experience[(eye_pain) ? "" : " immense pain as you feel" ] [eye_attack_text_victim] being pressed into your [eyes.name][(eye_pain)? "." : "!"]", 40, target.get_organ(BP_HEAD))
+		target.attack_bloody(null, user, eyedamage, BP_EYES)  
+		return 1
 	user.visible_message("<span class='danger'>[user] attempts to press \his [eye_attack_text] into [target]'s eyes, but they don't have any!</span>")
 
 /datum/unarmed_attack/proc/damage_flags()
