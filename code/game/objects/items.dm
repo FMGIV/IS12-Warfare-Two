@@ -781,7 +781,7 @@ var/list/global/slot_flags_enumeration = list(
 			for(var/mob/O in (viewers(M) - user - M))
 				O.show_message("<span class='danger'>[M] has been stabbed in the eye with [src] by [user].</span>", 1)
 			to_chat(M, "<span class='danger'>[user] stabs you in the eye with [src]!</span>")
-			to_chat(user, "<span class='danger'>You stab [M] in the eye with [src]!</span>")
+			to_chat(user, "<span class='combat_success'>You stab [M] in the eye with [src]!</span>")
 		else
 			user.visible_message( \
 				"<span class='danger'>[user] has stabbed themself with [src]!</span>", \
