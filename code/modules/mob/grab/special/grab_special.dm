@@ -311,13 +311,19 @@
 	return 1
 	
 /datum/grab/special/resolve_item_attack(var/obj/item/grab/G, var/mob/living/carbon/human/user, var/obj/item/I)
+	if(G.target_zone == BP_THROAT || G.target_zone == BP_HEAD || G.target_zone == BP_EYES)
+		if(istype(I, /obj/item/material/sword/combat_knife)) //eyestabbin
+			var/obj/item/material/sword/combat_knife/stabeminthefuckingeye = I
+			if(stabeminthefuckingeye.atk_mode == STAB)
+				return stabeminthefuckingeye.eyestab(G.affecting, G.assailant)
+	
 	if(G.target_zone == BP_THROAT || G.target_zone == BP_HEAD) //grab throat or head for throat slitting
 		if(G.assailant.zone_sel.selecting == BP_THROAT)
 			return attack_throat(G, I, user)
 	else if(G.target_zone == G.assailant.zone_sel.selecting) //grab and target limb to sever tendon
 		return attack_tendons(G, I, user, G.assailant.zone_sel.selecting)
 	else
-		return
+		return 0
 			
 /datum/grab/special/proc/attack_tendons(var/obj/item/grab/G, var/obj/item/W, var/mob/living/carbon/human/user, var/target_zone)
 	var/mob/living/carbon/human/affecting = G.affecting
