@@ -101,8 +101,8 @@ var/global/list/sparring_attack_cache = list()
 		user.visible_message("<span class='combat_success'>[user] presses \his [eye_attack_text] into [target]'s [eyes.name]!</span>")
 		var/eye_pain = eyes.can_feel_pain()
 		playsound(target, pick(GLOB.trauma_sound), 25, 0) //small squelch
-		target.custom_pain("You experience[(eye_pain) ? "" : " immense pain as you feel" ] [eye_attack_text_victim] being pressed into your [eyes.name][(eye_pain)? "." : "!"]", 40, target.get_organ(eyes.parent_organ))
-		return
+		target.custom_pain("You experience[(eye_pain) ? "" : " immense pain as you feel" ] [eye_attack_text_victim] being pressed into your [eyes.name][(eye_pain)? "." : "!"]", 40, target.get_organ(BP_HEAD))
+		return 1
 	user.visible_message("<span class='danger'>[user] attempts to press \his [eye_attack_text] into [target]'s eyes, but they don't have any!</span>")
 
 /datum/unarmed_attack/proc/damage_flags()

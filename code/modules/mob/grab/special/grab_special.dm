@@ -242,7 +242,9 @@
 /datum/grab/special/resolve_openhand_attack(var/obj/item/grab/G)
 	if(G.assailant.a_intent != I_HELP)
 		if(G.assailant.zone_sel.selecting == BP_HEAD && G.target_zone == BP_HEAD || G.assailant.zone_sel.selecting == BP_HEAD && G.target_zone == BP_THROAT) // grab head or throat and target head for headbutting
-			if(!G.assailant.lying && !G.affecting.lying) // no headbutting if both you and the enemy are lying down
+			if(!usr.lying) // bit hard to headbutt while lying down
+				to_chat(usr, "<span class='warning'>I can't headbutt while the enemy is also lying down!</span>")
+				return 1
 				if(headbutt(G))
 					usr.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 					return 1
@@ -268,8 +270,8 @@
 			to_chat(attacker, "<span class='danger'>You're going to need to remove the eye covering first.</span>")
 			return
 	if(!target.has_eyes())
-		to_chat(attacker, "<span class='danger'>You cannot locate any eyes on [target]!</span>")
-		return
+		//to_chat(attacker, "<span class='danger'>You cannot locate any eyes on [target]!</span>") //if no eyes just punch em
+		return 0
 
 	admin_attack_log(attacker, target, "Grab attacked the victim's eyes.", "Had their eyes grab attacked.", "attacked the eyes, using a grab action, of")
 
