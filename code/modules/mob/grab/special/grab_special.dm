@@ -494,7 +494,7 @@
 		eyes.take_damage(45, 0) //45 is max health for eyes
 		assailant.visible_message("<span class='combat_success'>[assailant] gouges out [affecting]'s [eyes.name]!</span>")
 		affecting.attack_bloody(null, assailant, 45, BP_EYES)  
-		affecting.custom_pain("You feel your eyes being gouged out!", 120, affecting = target.get_organ(BP_HEAD))
+		affecting.custom_pain("You feel your eyes being gouged out!", 120, affecting = affecting.get_organ(BP_HEAD))
 		playsound(affecting, pick(GLOB.trauma_sound), 100, 0) //*squelch*
 		affecting.blinded = 1
 		affecting.set_fullscreen(TRUE, "blind", /obj/screen/fullscreen/blind) //oh god I cant see *shit*
