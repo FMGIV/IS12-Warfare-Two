@@ -242,14 +242,14 @@
 /datum/grab/special/resolve_openhand_attack(var/obj/item/grab/G)
 	if(G.assailant.a_intent != I_HELP)
 		if(G.assailant.zone_sel.selecting == BP_HEAD && G.target_zone == BP_HEAD || G.assailant.zone_sel.selecting == BP_HEAD && G.target_zone == BP_THROAT) // grab head or throat and target head for headbutting
-			if(!usr.lying) // bit hard to headbutt while lying down
+			if(!G.assailant.lying && !G.affecting.lying) // no headbutting if both you and the enemy are lying down
 				if(headbutt(G))
 					usr.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 					return 1
 			else
-				to_chat(usr, "<span class='warning'>I can't headbutt while lying down!</span>")
+				to_chat(usr, "<span class='warning'>I can't headbutt while the enemy is also lying down!</span>")
 				return 1
-		else if(G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_HEAD || G.assailant.zone_sel.selecting == EYES && G.target_zone == BP_THROAT) //grab head or throat and target eyes for eye gouging
+		else if(G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_HEAD || G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_EYES || G.assailant.zone_sel.selecting == EYES && G.target_zone == BP_THROAT) //grab head or throat and target eyes for eye gouging
 			if(attack_eye(G))
 				usr.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 				return 1
@@ -279,13 +279,12 @@
 /datum/grab/special/proc/headbutt(var/obj/item/grab/G)
 	var/mob/living/carbon/human/attacker = G.assailant
 	var/mob/living/carbon/human/target = G.affecting
-
-	if(target.lying)
-		return
 		
 	attacker.adjustStaminaLoss(10)
 
 	var/damage = attacker.STAT_LEVEL(str)
+	if(attacker.lying)
+		damage = damage/2 //not as effective thrusting upwards
 	var/defense = target.STAT_LEVEL(end)
 	var/obj/item/clothing/hat = attacker.head
 	var/damage_flags = 0
