@@ -752,11 +752,11 @@ var/list/global/slot_flags_enumeration = list(
 			if(protection && (protection.body_parts_covered & EYES))
 				// you can't stab someone in the eyes wearing a mask!
 				to_chat(user, "<span class='warning'>You're going to need to remove the eye covering first.</span>")
-				return
+				return 0 //normal attack
 
 	if(!M.has_eyes())
 		to_chat(user, "<span class='warning'>You cannot locate any eyes on [M]!</span>")
-		return
+		return 0 //normal attack
 
 	admin_attack_log(user, M, "Attacked using \a [src]", "Was attacked with \a [src]", "used \a [src] to attack")
 
@@ -789,6 +789,7 @@ var/list/global/slot_flags_enumeration = list(
 			)
 
 		eyes.damage += rand(3,4)
+		/*
 		if(eyes.damage >= eyes.min_bruised_damage)
 			if(M.stat != 2)
 				if(eyes.robotic < ORGAN_ROBOT) //robot eyes bleeding might be a bit silly
@@ -803,13 +804,14 @@ var/list/global/slot_flags_enumeration = list(
 			if (eyes.damage >= eyes.min_broken_damage)
 				if(M.stat != 2)
 					to_chat(M, "<span class='warning'>You go blind!</span>")
+		*/ //not gonna deal with this
 
 		var/obj/item/organ/external/affecting = H.get_organ(eyes.parent_organ)
 		affecting.take_damage(src.force)
 	else
 		M.take_organ_damage(src.force)
 	M.eye_blurry += rand(3,4)
-	return
+	return 1
 
 /obj/item/clean_blood()
 	. = ..()
