@@ -463,9 +463,13 @@
 /datum/grab/special/eyes/proc/do_eye_gouging(var/obj/item/grab/G)
 	var/mob/living/carbon/human/assailant = G.assailant
 	var/mob/living/carbon/human/affecting = G.affecting
+	var/obj/item/organ/internal/eyes/eyes = affecting.internal_organs_by_name[BP_EYES]
 	
 	if(assailant.doing_something)
 		to_chat(assailant, "<span class='warning'>Already doing something!</span>")
+		return
+	if(eyes.status == ORGAN_DEAD)
+		to_chat(assailant, "<span class='warning'>Already gouged out!</span>")
 		return
 		
 	assailant.doing_something = TRUE 
@@ -482,12 +486,18 @@
 	if(!do_after(assailant, (40 - meleeskill), affecting))
 		assailant.doing_something = FALSE
 		return
-	
-	var/obj/item/organ/internal/eyes/eyes = affecting.internal_organs_by_name[BP_EYES]
+
 	if(eyes)
 		eyes.take_damage(45, 0) //45 is max health for eyes
 		assailant.visible_message("<span class='combat_success'>[assailant] gouges out [affecting]'s [eyes.name]!</span>")
 		affecting.custom_pain("You feel your eyes being gouged out!", 120, affecting = eyes)
 		playsound(affecting, pick(GLOB.trauma_sound), 100, 0) //*squelch*
+		affecting.blinded = 1
+		affecting.set_fullscreen(TRUE, "blind", /obj/screen/fullscreen/blind) //oh god I cant see *shit*
+		eyes.status |= ORGAN_DEAD // its dead.
+		var/obj/item/organ/external/head/head = affecting.get_organ(BP_HEAD)
+		if(head)
+			head.eye_icon = "blank_eyes"  
+			head.update_icon()
 	assailant.doing_something = FALSE
 	return
