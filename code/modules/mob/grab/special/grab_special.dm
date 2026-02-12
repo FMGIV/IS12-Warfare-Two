@@ -298,6 +298,8 @@
 	var/armor = target.run_armor_check(BP_HEAD, "melee")
 	target.apply_damage(damage, BRUTE, BP_HEAD, armor, damage_flags)
 	attacker.apply_damage((damage/2), BRUTE, BP_HEAD, attacker.run_armor_check(BP_HEAD, "melee"))
+	target.attack_bloody(null, attacker, damage, BP_HEAD)  
+	attacker.attack_bloody(null, attacker, damage/2, BP_HEAD)
 
 	if(armor <= 50 && target.headcheck(BP_HEAD) && prob(damage - defense)) //so normal soldiers have a small chance to get knocked out
 		target.apply_effect(20, PARALYZE)
@@ -414,11 +416,11 @@
 		damage_mod = 1.0 - (helmet.armor["melee"]/100)
 
 	var/total_damage = 0
-	//var/damage_flags = W.damage_flags()
+	var/damage_flags = W.damage_flags()
 	for(var/i in 1 to 3)
 		var/damage = max(W.force*1.5, 20)*damage_mod
-		//affecting.apply_damage(damage, W.damtype, BP_HEAD, 0, damage_flags, used_weapon=W)
-		affecting.attack_bloody(W, assailant, damage, BP_HEAD)
+		affecting.apply_damage(damage, W.damtype, BP_HEAD, 0, damage_flags, used_weapon=W)
+		affecting.attack_bloody(W, assailant, damage, BP_HEAD) //war is *messy*
 		total_damage += damage
 
 	if(total_damage)
@@ -491,6 +493,7 @@
 	if(eyes)
 		eyes.take_damage(45, 0) //45 is max health for eyes
 		assailant.visible_message("<span class='combat_success'>[assailant] gouges out [affecting]'s [eyes.name]!</span>")
+		affecting.attack_bloody(null, assailant, 45, BP_EYES)  
 		affecting.custom_pain("You feel your eyes being gouged out!", 120, affecting = eyes)
 		playsound(affecting, pick(GLOB.trauma_sound), 100, 0) //*squelch*
 		affecting.blinded = 1

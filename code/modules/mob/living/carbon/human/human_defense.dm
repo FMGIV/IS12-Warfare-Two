@@ -407,41 +407,43 @@ meteor_act
 
 	return 1
 
-/mob/living/carbon/human/proc/attack_bloody(obj/item/W, mob/living/attacker, var/effective_force, var/hit_zone)
-	if(W.damtype != BRUTE)
-		return
+/mob/living/carbon/human/proc/attack_bloody(obj/item/W = null, mob/living/attacker, var/effective_force, var/hit_zone)
+	
+	if(W) //so I can use it for headbutts n shit
+		if(W.damtype != BRUTE)
+			return
 
-	//make non-sharp low-force weapons less likely to be bloodied
-	if(W.sharp || prob(effective_force*4))
-		if(!(W.atom_flags & ATOM_FLAG_NO_BLOOD))
-			W.add_blood(src)
-	else
-		return //if the weapon itself didn't get bloodied than it makes little sense for the target to be bloodied either
+		//make non-sharp low-force weapons less likely to be bloodied
+		if(W.sharp || prob(effective_force*4))
+			if(!(W.atom_flags & ATOM_FLAG_NO_BLOOD))
+				W.add_blood(src)
+		else
+			return //if the weapon itself didn't get bloodied than it makes little sense for the target to be bloodied either
 
-	//getting the weapon bloodied is easier than getting the target covered in blood, so run prob() again
-	if(prob(33 + W.sharp*10))
-		var/turf/location = loc
-		if(istype(location, /turf/simulated))
-			location.add_blood(src)
-		if(ishuman(attacker))
-			var/mob/living/carbon/human/H = attacker
-			if(get_dist(H, src) <= 1) //people with TK won't get smeared with blood
-				H.bloody_body(src)
-				H.bloody_hands(src)
+		//getting the weapon bloodied is easier than getting the target covered in blood, so run prob() again
+		if(prob(33 + W.sharp*10))
+			var/turf/location = loc
+			if(istype(location, /turf/simulated))
+				location.add_blood(src)
+			if(ishuman(attacker))
+				var/mob/living/carbon/human/H = attacker
+				if(get_dist(H, src) <= 1) //people with TK won't get smeared with blood
+					H.bloody_body(src)
+					H.bloody_hands(src)
 
-		switch(hit_zone)
-			if(BP_HEAD)
-				if(wear_mask)
-					wear_mask.add_blood(src)
-					update_inv_wear_mask(0)
-				if(head)
-					head.add_blood(src)
-					update_inv_head(0)
-				if(glasses && prob(33))
-					glasses.add_blood(src)
-					update_inv_glasses(0)
-			if(BP_CHEST)
-				bloody_body(src)
+			switch(hit_zone)
+				if(BP_HEAD)
+					if(wear_mask)
+						wear_mask.add_blood(src)
+						update_inv_wear_mask(0)
+					if(head)
+						head.add_blood(src)
+						update_inv_head(0)
+					if(glasses && prob(33))
+						glasses.add_blood(src)
+						update_inv_glasses(0)
+				if(BP_CHEST)
+					bloody_body(src)
 
 	//All this is copypasta'd from projectile code. Basically there's a cool splat animation when someone gets hit by something.
 	var/splatter_dir = dir
