@@ -279,7 +279,11 @@
 /datum/grab/special/proc/headbutt(var/obj/item/grab/G)
 	var/mob/living/carbon/human/attacker = G.assailant
 	var/mob/living/carbon/human/target = G.affecting
-		
+	
+	for(var/obj/item/grab/Gettinggrabbed in attacker.grabbed_by)
+		if(Gettinggrabbed.target_zone in list(BP_HEAD, BP_THROAT))
+			to_chat(attacker, "<span class='phobia'>You try to headbutt [target], but you feel a grip holding your head in place!</span>")
+			return 1 // so it doesn't punch em also
 	attacker.adjustStaminaLoss(10)
 
 	var/damage = attacker.STAT_LEVEL(str)
