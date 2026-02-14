@@ -249,7 +249,7 @@
 			else
 				to_chat(usr, "<span class='warning'>I can't headbutt while lying down!</span>")
 				return 1
-		else if(G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_HEAD || G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_EYES || G.assailant.zone_sel.selecting == EYES && G.target_zone == BP_THROAT) //grab head or throat and target eyes for eye gouging
+		else if(G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_HEAD || G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_EYES || G.assailant.zone_sel.selecting == BP_EYES && G.target_zone == BP_THROAT) //grab head or throat and target eyes for eye gouging
 			if(attack_eye(G))
 				usr.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 				return 1
