@@ -764,6 +764,16 @@ var/list/global/slot_flags_enumeration = list(
 	user.do_attack_animation(M)
 
 	src.add_fingerprint(user)
+	
+	var/bad_arc = reverse_direction(H.dir) //arc of directions from which we cannot block or dodge
+
+	if(check_shield_arc(H, bad_arc, null, user)) //cant dodge from behind
+		if(H.attempt_dodge())
+			return 1 //so no double attack on whiff
+			
+	if(H.check_shields(src.force, src, user, null, "the [src.name]"))
+		return 1 //so no double attack on parry
+	
 	//if((CLUMSY in user.mutations) && prob(50))
 	//	M = user
 		/*
